@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:dart_airtable/dart_airtable.dart';
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
 import 'package:polygonic/screens/map_screen.dart';
@@ -12,17 +15,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<List<double>> recordedPoints = [];
+  List<List<double>> pointsForSubmission = [];
 
   //function to add recorded points to a list
   void addPoint() async {
     //call the geolocator
     String location = await kLocator.getPosition();
+    print(location);
     //convert the location to a list
-    List<double> locationList = location.split(',').map(double.parse).toList();
-
+    List<double> locationList = location.split(', ').map(double.parse).toList();
+    List<double> coordinatesList = [locationList[1], locationList[0]];
     //add the list to the list of recorded points
     setState(() {
       recordedPoints.add(locationList);
+      pointsForSubmission.add(coordinatesList);
     });
     print(locationList);
   }
@@ -50,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 90,
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 20,
                 ),
                 if (recordedPoints.isNotEmpty)
                   Text(
@@ -58,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: const TextStyle(color: Colors.white),
                   ),
                 const SizedBox(
-                  height: 10,
+                  height: 16,
                 ),
                 EasyButton(
                   buttonColor: Colors.white,
@@ -73,6 +79,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     addPoint();
                   },
                 ),
+                const SizedBox(
+                  height: 16,
+                ),
                 TextButton(
                   style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(
@@ -86,7 +95,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(25),
                         ),
                       )),
-                  onPressed: () {
+                  onPressed: () async {
+                    setState(() {
+                      recordedPoints.add(recordedPoints.first);
+                      pointsForSubmission.add(pointsForSubmission.first);
+                    });
+                    String polygonData =
+                        createGeoJSONPolygon(pointsForSubmission);
+                    var response = sendToAirtable(data: polygonData);
+                    print(response);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -105,5 +122,36 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  String createGeoJSONPolygon(List<List<double>> points) {
+    Map<String, dynamic> geoJSONObject = {
+      "type": "Polygon",
+      "coordinates": [points]
+    };
+
+    return json.encode(geoJSONObject);
+  }
+
+  Future<dynamic> sendToAirtable({required String data}) async {
+    var apiKey =
+        'patsRqLsX7Qj6YTEn.265a5d5b26e78cb3a99489517a9386d1154117ce66542845de3963c216303123';
+    var myBaseID = 'appIqWoIxme6lKzL8';
+    var tableName = 'MyTable';
+    var airtable = Airtable(apiKey: apiKey, projectBase: myBaseID);
+    var sent = await airtable.createRecord(
+      tableName,
+      AirtableRecord(
+        fields: [
+          AirtableRecordField(
+            fieldName: 'Geojson_Data',
+            value: data,
+          ),
+        ],
+      ),
+      typecast: true,
+    );
+    print("Created? :$sent");
+    return sent ?? "Failed";
   }
 }

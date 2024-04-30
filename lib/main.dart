@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:polygonic/screens/home_screen.dart'; // Importing LatLng from latlong2 package
 
 void main() {
@@ -7,7 +6,9 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key});
+  const MyApp({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

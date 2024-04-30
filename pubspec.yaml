@@ -38,6 +38,10 @@ dependencies:
   flutter_map: ^6.1.0
   flutter_map_geojson: ^1.0.6
   geolocator: ^11.0.0
+  dart_airtable:
+    git:
+      url: https://github.com/elias-avenger/dart-airtable
+      ref: master
   easy_loading_button: ^0.3.2
   modal_bottom_sheet: ^3.0.0
   maps_toolkit2:

@@ -5,7 +5,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:polygonic/utilities/constants.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({Key? key, required this.points});
+  const MapScreen({super.key, required this.points});
 
   final List points;
 
@@ -17,7 +17,6 @@ class _MapScreenState extends State<MapScreen> {
   List<LatLng> pointsList = [];
   LatLng initialPoint = const LatLng(1.373333, 32.290275);
   String area = '';
-  //function to convert the points list to a list of LatLng
   void getPoints() {
     //loop through the points list and convert each point to a LatLng
     for (var point in widget.points) {
@@ -58,14 +57,14 @@ class _MapScreenState extends State<MapScreen> {
             ),
             const SizedBox(height: 10.0),
             ListTile(
-              leading: Icon(
+              leading: const Icon(
                 Icons.route,
                 color: Colors.green,
               ),
               title: Text('Points drawn: ${widget.points.length}'),
             ),
             ListTile(
-              leading: Icon(
+              leading: const Icon(
                 Icons.crop,
                 color: Colors.green,
               ),
