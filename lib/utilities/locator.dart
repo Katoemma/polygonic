@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:geolocator/geolocator.dart';
 
 class Locator {
@@ -43,7 +45,15 @@ class Locator {
   }
 
   Future<String> getPosition() async {
+    String locationString = "Failed";
     Position? currentPosition = await _getCurrentPosition();
-    return '${currentPosition?.latitude}, ${currentPosition?.longitude}';
+    if (currentPosition != null) {
+      locationString =
+          '${currentPosition.latitude}, ${currentPosition.longitude}, ${currentPosition.accuracy}';
+      //print("location: $locationString");
+    }
+    //await Future.delayed(const Duration(seconds: 2));
+    print("Precision: ${currentPosition?.accuracy}");
+    return locationString;
   }
 }

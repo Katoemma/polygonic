@@ -16,19 +16,36 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<List<double>> recordedPoints = [];
   List<List<double>> pointsForSubmission = [];
+  double recordedPrecision = 0.0;
 
   //function to add recorded points to a list
   void addPoint() async {
+    List<double> locationList = [];
+    List<double> coordinatesList = [];
     //call the geolocator
     String location = await kLocator.getPosition();
-    print(location);
-    //convert the location to a list
-    List<double> locationList = location.split(', ').map(double.parse).toList();
-    List<double> coordinatesList = [locationList[1], locationList[0]];
+    //print(location);
+    double bestPrecision = 100.0;
+    for (int x = 0; x <= 6; x++) {
+      //convert the location to a list
+      if (location != "Failed") {
+        List<double> locationCheck =
+            location.split(', ').map(double.parse).toList();
+        if (locationCheck[2] < bestPrecision) {
+          bestPrecision = locationCheck[2];
+          locationList = locationCheck;
+          coordinatesList = [locationList[1], locationList[0], locationList[2]];
+        }
+        await Future.delayed(const Duration(seconds: 1), () {
+          print(" Point: $location");
+        });
+      }
+    }
     //add the list to the list of recorded points
     setState(() {
       recordedPoints.add(locationList);
       pointsForSubmission.add(coordinatesList);
+      recordedPrecision = locationList[2];
     });
     print(locationList);
   }
@@ -60,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 if (recordedPoints.isNotEmpty)
                   Text(
-                    'Recorded points: ${recordedPoints.length}',
+                    'Recorded points: ${recordedPoints.length} --- Precision: $recordedPrecision',
                     style: const TextStyle(color: Colors.white),
                   ),
                 const SizedBox(
