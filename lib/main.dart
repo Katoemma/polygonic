@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:polygonic/screens/home_screen.dart'; // Importing LatLng from latlong2 package
+import 'package:polygonic/screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
