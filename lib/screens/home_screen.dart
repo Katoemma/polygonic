@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     List<double> coordinatesList = [];
     //print(location);
     double bestPrecision = 100.0;
-    const oneSec = Duration(seconds: 1);
+    const oneSec = Duration(seconds: 5);
     _timer = Timer.periodic(oneSec, (timer) async {
       if (_countdown >= 5) {
         timer.cancel();
