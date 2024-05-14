@@ -1,10 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_airtable/dart_airtable.dart';
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
 import 'package:polygonic/screens/map_screen.dart';
-import 'package:polygonic/utilities/constants.dart';
+
+import '../utilities/constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,37 +19,61 @@ class _HomeScreenState extends State<HomeScreen> {
   List<List<double>> recordedPoints = [];
   List<List<double>> pointsForSubmission = [];
   double recordedPrecision = 0.0;
+  int _countdown = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    //startCountdown();
+  }
 
   //function to add recorded points to a list
-  void addPoint() async {
+  void addPoint() {
     List<double> locationList = [];
     List<double> coordinatesList = [];
-    //call the geolocator
-    String location = await kLocator.getPosition();
     //print(location);
     double bestPrecision = 100.0;
-    for (int x = 0; x <= 6; x++) {
-      //convert the location to a list
-      if (location != "Failed") {
-        List<double> locationCheck =
-            location.split(', ').map(double.parse).toList();
-        if (locationCheck[2] < bestPrecision) {
-          bestPrecision = locationCheck[2];
-          locationList = locationCheck;
-          coordinatesList = [locationList[1], locationList[0], locationList[2]];
-        }
-        await Future.delayed(const Duration(seconds: 1), () {
-          print(" Point: $location");
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(oneSec, (timer) async {
+      if (_countdown >= 5) {
+        timer.cancel();
+        //add the list to the list of recorded points
+        setState(() {
+          recordedPoints.add(locationList);
+          pointsForSubmission.add(coordinatesList);
+          recordedPrecision = locationList[2];
+          _countdown = 0;
         });
+        // Navigate to next screen or display something else
+      } else {
+        //call the geolocator
+        String location = await kLocator.getPosition();
+        //convert the location to a list
+        if (location != "Failed") {
+          List<double> locationCheck =
+              location.split(', ').map(double.parse).toList();
+          if (locationCheck[2] < bestPrecision) {
+            bestPrecision = locationCheck[2];
+            locationList = locationCheck;
+            coordinatesList = [
+              locationList[1],
+              locationList[0],
+              locationList[2]
+            ];
+            print("Better Point: $bestPrecision at: $_countdown");
+          }
+          setState(() {
+            recordedPrecision = locationList[2];
+            _countdown++;
+          });
+        } else {
+          setState(() {
+            _countdown = _countdown;
+          });
+        }
       }
-    }
-    //add the list to the list of recorded points
-    setState(() {
-      recordedPoints.add(locationList);
-      pointsForSubmission.add(coordinatesList);
-      recordedPrecision = locationList[2];
     });
-    print(locationList);
   }
 
   @override
@@ -75,6 +101,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(
                   height: 20,
                 ),
+                Text(
+                  '$_countdown',
+                  style: const TextStyle(fontSize: 48),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                if (recordedPrecision > 0.0)
+                  Text(
+                    'Precision: $recordedPrecision',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 if (recordedPoints.isNotEmpty)
                   Text(
                     'Recorded points: ${recordedPoints.length} --- Precision: $recordedPrecision',
@@ -91,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Record this point',
                     style: TextStyle(color: Colors.teal),
                   ),
-                  loadingStateWidget: const Text('gettting cordinates'),
+                  loadingStateWidget: const Text('getting coordinates'),
                   onPressed: () {
                     addPoint();
                   },
@@ -170,5 +208,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     print("Created? :$sent");
     return sent ?? "Failed";
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }
