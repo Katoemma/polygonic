@@ -53,7 +53,7 @@ class Locator {
       //print("location: $locationString");
     }
     //await Future.delayed(const Duration(seconds: 2));
-    print("Precision: ${currentPosition?.accuracy}");
+    //print("Precision: ${currentPosition?.accuracy}");
     return locationString;
   }
 }
