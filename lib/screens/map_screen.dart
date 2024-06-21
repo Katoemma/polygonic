@@ -38,7 +38,7 @@ class _MapScreenState extends State<MapScreen> {
     //set the state to update the UI
   }
 
-  //function to show bootom sheet
+  //function to show bottom sheet
   void showBottomSheet() {
     showMaterialModalBottomSheet(
       context: context,
