@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dart_airtable/dart_airtable.dart';
 import 'package:easy_loading_button/easy_loading_button.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:polygonic/screens/map_screen.dart';
 
 import '../utilities/constants.dart';
@@ -21,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double recordedPrecision = 0.0;
   int _countdown = 0;
   Timer? _timer;
-
+  StreamSubscription<Position>? _positionStreamSubscription;
   @override
   void initState() {
     super.initState();
@@ -131,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   loadingStateWidget: const Text('getting coordinates'),
                   onPressed: () {
-                    addPoint();
+                    _startTracking();
                   },
                 ),
                 const SizedBox(
@@ -139,13 +140,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 TextButton(
                   style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                         Colors.black,
                       ),
-                      padding: MaterialStateProperty.all(
+                      padding: WidgetStateProperty.all(
                         const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      shape: MaterialStateProperty.all(
+                      shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
                         ),
@@ -215,4 +216,58 @@ class _HomeScreenState extends State<HomeScreen> {
     _timer?.cancel();
     super.dispose();
   }
+
+  void _startTracking() {
+    double bestPrecision = 100.0;
+    double bestLat = 0.0;
+    double bestLon = 0.0;
+    double bestAlt = 0.0;
+    _stopTracking(); // Stop any previous tracking
+    _positionStreamSubscription =
+        Geolocator.getPositionStream().listen((Position position) {
+      double latitude = position.latitude;
+      double longitude = position.longitude;
+      double altitude = position.altitude;
+      double accuracy = position.accuracy;
+      if (accuracy < bestPrecision) {
+        bestPrecision = accuracy;
+        bestLat = latitude;
+        bestLon = longitude;
+        bestAlt = altitude;
+      }
+      setState(() {
+        recordedPrecision = bestPrecision;
+        _countdown++;
+      });
+      if (_countdown == 5) {
+        _stopTracking();
+        setState(() {
+          recordedPoints.add([bestLat, bestLon, bestAlt, bestPrecision]);
+          pointsForSubmission.add([bestLon, bestLat, bestAlt, bestPrecision]);
+        });
+      }
+    });
+  }
+
+  void _stopTracking() {
+    _positionStreamSubscription?.cancel();
+    setState(() {
+      _countdown = 0;
+    });
+  }
+  // void _recordPoint() {
+  //   Geolocator.getCurrentPosition().then((Position position) {
+  //     setState(() {
+  //       _recordedPoints.add(LatLng(position.latitude, position.longitude));
+  //       _recordedPrecisions.add(position.accuracy);
+  //
+  //       _showRecordedPointDialog(
+  //           position.latitude, position.longitude, position.accuracy);
+  //
+  //       if (_recordedPoints.length == 5) {
+  //         _selectBestPoint();
+  //       }
+  //     });
+  //   });
+  // }
 }

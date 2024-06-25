@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:polygonic/screens/New/trckker.dart';
-import 'package:polygonic/screens/form_example.dart';
 import 'package:polygonic/screens/home_screen.dart';
-import 'package:polygonic/screens/test_form.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +16,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       home: Scaffold(
-        body: GardenMap(),
+        body: HomeScreen(),
       ),
     );
   }
