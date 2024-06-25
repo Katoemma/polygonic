@@ -35,7 +35,7 @@ class Locator {
     try {
       LocationPermission permission = await Geolocator.requestPermission();
       Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.bestForNavigation);
+          desiredAccuracy: LocationAccuracy.best);
 
       return position;
     } catch (e) {
